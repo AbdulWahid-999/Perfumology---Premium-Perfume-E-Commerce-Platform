@@ -24,7 +24,8 @@ router.post('/upload', protect, admin, upload.single('image'), (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/products/${req.file.filename}`;
+    // Cloudinary returns secure_url automatically
+    const imageUrl = req.file.secure_url;
     res.status(200).json({ imageUrl });
   } catch (error) {
     res.status(500).json({ message: 'Failed to upload image', error: error.message });

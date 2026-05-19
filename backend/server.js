@@ -29,25 +29,25 @@ app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP for now (can be configured later)
 }));
 
-// Security: Rate limiting - Prevent brute force attacks
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
+// Security: Rate limiting - Prevent brute force attacks (Disabled for development)
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100, // Limit each IP to 100 requests per windowMs
+//   message: 'Too many requests from this IP, please try again later.',
+//   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+//   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+// });
 
 // Apply rate limiting to all routes
-app.use(limiter);
+// app.use(limiter);
 
-// Stricter rate limiting for authentication routes
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login/register attempts per windowMs
-  message: 'Too many authentication attempts, please try again after 15 minutes.',
-  skipSuccessfulRequests: true, // Don't count successful requests
-});
+// Stricter rate limiting for authentication routes (Disabled for development)
+// const authLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 5, // Limit each IP to 5 login/register attempts per windowMs
+//   message: 'Too many authentication attempts, please try again after 15 minutes.',
+//   skipSuccessfulRequests: true, // Don't count successful requests
+// });
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -55,7 +55,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Serve uploaded files statically
+// Serve uploaded files statically (for backward compatibility, if needed)
 app.use('/uploads', express.static('uploads'));
 
 // Session middleware for Passport
@@ -81,9 +81,9 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Apply stricter rate limiting to auth routes
-app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/auth', authLimiter, googleAuthRoutes);
+// Apply stricter rate limiting to auth routes (Disabled for development)
+app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
