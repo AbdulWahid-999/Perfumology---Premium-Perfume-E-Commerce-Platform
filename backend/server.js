@@ -5,7 +5,6 @@ const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const passport = require('./config/passport');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -23,40 +22,17 @@ connectDB();
 
 const app = express();
 
-// Security: Helmet - Sets various HTTP headers for security
+// Security: Helmet
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow images to be loaded
-  contentSecurityPolicy: false, // Disable CSP for now (can be configured later)
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false,
 }));
-
-// Security: Rate limiting - Prevent brute force attacks (Disabled for development)
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 100, // Limit each IP to 100 requests per windowMs
-//   message: 'Too many requests from this IP, please try again later.',
-//   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-//   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-// });
-
-// Apply rate limiting to all routes
-// app.use(limiter);
-
-// Stricter rate limiting for authentication routes (Disabled for development)
-// const authLimiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 5, // Limit each IP to 5 login/register attempts per windowMs
-//   message: 'Too many authentication attempts, please try again after 15 minutes.',
-//   skipSuccessfulRequests: true, // Don't count successful requests
-// });
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
 }));
 app.use(express.json());
-
-// Serve uploaded files statically (for backward compatibility, if needed)
-app.use('/uploads', express.static('uploads'));
 
 // Session middleware for Passport
 app.use(
@@ -65,10 +41,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Cross-site cookies in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     },
   })
 );
@@ -81,7 +57,7 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Apply stricter rate limiting to auth routes (Disabled for development)
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);
 app.use('/api/products', productRoutes);
@@ -95,8 +71,5 @@ app.use('/api/admin', adminRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+// Export for Vercel serverless
+module.exports = app;
